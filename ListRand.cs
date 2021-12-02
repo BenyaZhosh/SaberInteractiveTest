@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -12,37 +13,26 @@ namespace Client
 
         public void Serialize(FileStream s)
         {
-            ListNode[] arrayRand = new ListNode[Count];
+            Dictionary<ListNode, int> dictionaryRand = new Dictionary<ListNode, int>();
             var currentNode = Head;
             for (int index = 0; index < Count && currentNode != null; index++)
             {
-                arrayRand[index] = currentNode;
+                dictionaryRand.Add(currentNode, index);
                 currentNode = currentNode.Next;
             }
             
-            byte[] buffer = BitConverter.GetBytes(arrayRand.Length);
+            byte[] buffer = BitConverter.GetBytes(Count);
             s.Write(buffer, 0, buffer.Length);
 
-            for (int i = 0; i < arrayRand.Length; i++)
+            for (var node = Head; node != null; node = node.Next)
             {
-                var node = arrayRand[i];
-                
                 buffer = BitConverter.GetBytes(node.Data.Length);
                 s.Write(buffer, 0, buffer.Length);
                 
                 buffer = Encoding.Default.GetBytes(node.Data);
                 s.Write(buffer, 0, buffer.Length);
 
-                int randIndex = -1;
-                for (int j = 0; j < arrayRand.Length; j++)
-                {
-                    if (arrayRand[j] == node.Rand)
-                    {
-                        randIndex = j;
-                        break;
-                    }
-                }
-                
+                int randIndex = node.Rand == null ? -1 : dictionaryRand[node.Rand];
                 buffer = BitConverter.GetBytes(randIndex);
                 s.Write(buffer, 0, buffer.Length);
             }
